@@ -180,14 +180,28 @@ export const handleCreateSite: RequestHandler = (req, res) => {
       inchargeName: inchargeUser?.name || "",
       isActive: true,
     };
+
+    // Validate that selected foremen are not already assigned to other sites
+    if (Array.isArray(foremanIds) && foremanIds.length > 0) {
+      const alreadyAssigned = database.users.filter(
+        (u) => u.role === "foreman" && foremanIds.includes(u.id) && u.siteId && u.siteId !== "",
+      );
+      if (alreadyAssigned.length > 0) {
+        const response: ApiResponse = { success: false, message: "One or more foremen are already assigned to a site." };
+        return res.status(400).json(response);
+      }
+    }
+
     database.sites.push(newSite);
 
     // Assign siteIds
     if (inchargeUser) inchargeUser.siteId = id;
     if (Array.isArray(foremanIds)) {
-      database.users.filter(u => foremanIds.includes(u.id) && u.role === "foreman").forEach(f => {
-        f.siteId = id;
-      });
+      database.users
+        .filter((u) => foremanIds.includes(u.id) && u.role === "foreman")
+        .forEach((f) => {
+          f.siteId = id;
+        });
     }
 
     const response: ApiResponse<Site> = { success: true, data: newSite };
