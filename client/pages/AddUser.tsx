@@ -12,8 +12,10 @@ export default function AddUser() {
 
   const [sites, setSites] = useState<Site[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const params = new URLSearchParams(window.location.search);
+  const roleParam = params.get("role");
   const [form, setForm] = useState({
-    role: "site_incharge" as "site_incharge" | "foreman",
+    role: (roleParam === "foreman" ? "foreman" : "site_incharge") as "site_incharge" | "foreman",
     name: "",
     fatherName: "",
     username: "",
