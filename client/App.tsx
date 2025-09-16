@@ -198,6 +198,15 @@ function App() {
             }
           />
 
+          <Route
+            path="/users/add"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <AddUser />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
