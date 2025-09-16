@@ -11,6 +11,7 @@ import {
   CardContent,
 } from "../components/ui/card";
 import { Building2, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { ApiResponse, Site, User } from "@shared/api";
 import {
   Dialog,
@@ -21,12 +22,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 
 export default function SiteManagement() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
   const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
   const [sites, setSites] = useState<Site[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -111,8 +115,29 @@ export default function SiteManagement() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">SITES</h1>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <h1 className="text-2xl font-bold text-gray-900">SITE OVERVIEW</h1>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" /> Add
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate('/users/add?role=site_incharge')}>
+                Add Site Incharge
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/users/add?role=foreman')}>
+                Add Foreman
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" /> Create Site
+              </Button>
+            </DialogTrigger>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" /> Create Site
@@ -208,46 +233,52 @@ export default function SiteManagement() {
               </DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Sites Overview</CardTitle>
-          <CardDescription>Site → Incharge → Foremen</CardDescription>
+          <CardTitle>Sites</CardTitle>
+          <CardDescription>Click a site to view details and assignments</CardDescription>
         </CardHeader>
         <CardContent>
           {sites.length === 0 ? (
             <div className="text-gray-500">No sites found.</div>
           ) : (
-            <div className="space-y-4">
-              {sites.map((s) => {
+            <Accordion type="single" collapsible>
+              {sites.map((s, idx) => {
                 const siteForemen = foremen.filter((f) => f.siteId === s.id);
                 return (
-                  <div key={s.id} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">
-                        {s.name} <span className="text-sm text-gray-500">({s.location})</span>
+                  <AccordionItem key={s.id} value={s.id}>
+                    <AccordionTrigger>
+                      <div className="flex items-center gap-3">
+                        <span className="w-6 text-right">{idx + 1}.</span>
+                        <span className="font-medium">{s.name}</span>
                       </div>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Incharge: {s.inchargeName || "Not assigned"}
-                    </div>
-                    <div className="mt-2 ml-4 text-sm text-gray-700">
-                      <div className="font-medium">Foremen:</div>
-                      <ul className="list-disc list-inside">
-                        {siteForemen.map((f) => (
-                          <li key={f.id}>{f.name}</li>
-                        ))}
-                        {siteForemen.length === 0 && (
-                          <li className="text-gray-500">None</li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="p-3 border rounded-md">
+                        <div className="text-sm text-gray-600">
+                          Incharge: {s.inchargeName || "Not assigned"}
+                        </div>
+                        <div className="mt-2 text-sm text-gray-700">
+                          <div className="font-medium">Foremen:</div>
+                          <ul className="list-disc list-inside">
+                            {siteForemen.map((f) => (
+                              <li key={f.id}>{f.name}</li>
+                            ))}
+                            {siteForemen.length === 0 && (
+                              <li className="text-gray-500">None</li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 );
               })}
-            </div>
+            </Accordion>
           )}
         </CardContent>
       </Card>
