@@ -117,6 +117,12 @@ export default function Layout({ children }: LayoutProps) {
           icon: Building2,
           roles: ["admin"],
         },
+        {
+          label: "Add User",
+          href: "/users/add",
+          icon: Users,
+          roles: ["admin"],
+        },
       );
     }
 
