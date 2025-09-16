@@ -15,6 +15,7 @@ import AdminApproval from "./pages/AdminApproval";
 import WorkerManagement from "./pages/WorkerManagement";
 import SiteManagement from "./pages/SiteManagement";
 import Sites from "./pages/Sites";
+import AddUser from "./pages/AddUser";
 import Layout from "./components/Layout";
 import { Toaster } from "./components/ui/toaster";
 import Profile from "./pages/Profile";
