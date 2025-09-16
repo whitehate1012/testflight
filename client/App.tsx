@@ -15,6 +15,8 @@ import AdminApproval from "./pages/AdminApproval";
 import WorkerManagement from "./pages/WorkerManagement";
 import SiteManagement from "./pages/SiteManagement";
 import Sites from "./pages/Sites";
+import AddUser from "./pages/AddUser";
+import AttendanceRecords from "./pages/AttendanceRecords";
 import Layout from "./components/Layout";
 import { Toaster } from "./components/ui/toaster";
 import Profile from "./pages/Profile";
@@ -193,6 +195,24 @@ function App() {
             element={
               <ProtectedRoute requiredRole={["admin"]}>
                 <Sites />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users/add"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <AddUser />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/attendance/records"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <AttendanceRecords />
               </ProtectedRoute>
             }
           />

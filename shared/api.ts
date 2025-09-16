@@ -4,6 +4,7 @@ export interface User {
   username: string;
   role: "foreman" | "site_incharge" | "admin";
   name: string;
+  fatherName?: string;
   email?: string;
   siteId?: string;
   createdAt: Date;
@@ -139,4 +140,8 @@ export interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   error?: string;
+}
+
+export interface DemoResponse {
+  message: string;
 }

@@ -100,21 +100,27 @@ export default function Layout({ children }: LayoutProps) {
           roles: ["admin"],
         },
         {
-          label: "Manage Workers",
-          href: "/workers",
-          icon: Users,
-          roles: ["admin"],
-        },
-        {
           label: "Manage Sites",
           href: "/sites",
           icon: Settings,
           roles: ["admin"],
         },
         {
+          label: "Add User",
+          href: "/users/add",
+          icon: Users,
+          roles: ["admin"],
+        },
+        {
           label: "Sites",
           href: "/sites/overview",
           icon: Building2,
+          roles: ["admin"],
+        },
+        {
+          label: "Attendance Records (coming soon)",
+          href: "/attendance/records",
+          icon: ClipboardList,
           roles: ["admin"],
         },
       );

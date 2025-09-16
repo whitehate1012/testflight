@@ -15,6 +15,7 @@ import {
 } from "../components/ui/accordion";
 import { ApiResponse, Site, User, AttendanceRecord } from "@shared/api";
 import { Badge } from "../components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 
 export default function Sites() {
   const { user } = useAuth();
@@ -23,9 +24,9 @@ export default function Sites() {
   const [users, setUsers] = useState<User[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [expandedSites, setExpandedSites] = useState<string[]>([]);
-  const [expandedForemen, setExpandedForemen] = useState<
-    Record<string, boolean>
-  >({});
+  const [expandedForemen, setExpandedForemen] = useState<Record<string, boolean>>({});
+  const [selectedForemanId, setSelectedForemanId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [foremanRecords, setForemanRecords] = useState<
     Record<string, AttendanceRecord[]>
   >({});
@@ -70,8 +71,9 @@ export default function Sites() {
     );
   }
 
-  const toggleForeman = async (foremanId: string) => {
-    setExpandedForemen((prev) => ({ ...prev, [foremanId]: !prev[foremanId] }));
+  const openForemanDialog = async (foremanId: string) => {
+    setSelectedForemanId(foremanId);
+    setDialogOpen(true);
     if (!foremanRecords[foremanId]) {
       try {
         setLoadingForeman((prev) => ({ ...prev, [foremanId]: true }));
@@ -165,7 +167,7 @@ export default function Sites() {
                               <div key={f.id} className="border rounded-md">
                                 <button
                                   className="w-full text-left px-3 py-2 hover:bg-muted"
-                                  onClick={() => toggleForeman(f.id)}
+                                  onClick={() => openForemanDialog(f.id)}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
@@ -176,56 +178,9 @@ export default function Sites() {
                                         @{f.username}
                                       </div>
                                     </div>
-                                    <div className="text-xs text-gray-500">
-                                      {expandedForemen[f.id] ? "Hide" : "View"}{" "}
-                                      attendance
-                                    </div>
+                                    <div className="text-xs text-gray-500">View attendance</div>
                                   </div>
                                 </button>
-                                {expandedForemen[f.id] && (
-                                  <div className="px-3 pb-3 space-y-2">
-                                    {loadingForeman[f.id] ? (
-                                      <div className="text-sm text-gray-500">
-                                        Loading...
-                                      </div>
-                                    ) : (
-                                      <div className="space-y-2">
-                                        {(foremanRecords[f.id] || []).length ===
-                                        0 ? (
-                                          <div className="text-sm text-gray-500">
-                                            No attendance records.
-                                          </div>
-                                        ) : (
-                                          (foremanRecords[f.id] || []).map(
-                                            (r) => (
-                                              <div
-                                                key={r.id}
-                                                className="flex items-center justify-between border rounded p-2"
-                                              >
-                                                <div>
-                                                  <div className="font-medium">
-                                                    {r.date}
-                                                  </div>
-                                                  <div className="text-xs text-gray-500">
-                                                    {r.presentWorkers}/
-                                                    {r.totalWorkers} present
-                                                  </div>
-                                                </div>
-                                                <Badge
-                                                  variant={statusVariant(
-                                                    r.status,
-                                                  )}
-                                                >
-                                                  {statusLabel(r.status)}
-                                                </Badge>
-                                              </div>
-                                            ),
-                                          )
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
                               </div>
                             ))
                           )}
@@ -239,6 +194,41 @@ export default function Sites() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Foreman Attendance</DialogTitle>
+          </DialogHeader>
+          {selectedForemanId ? (
+            loadingForeman[selectedForemanId] ? (
+              <div className="text-sm text-gray-500">Loading...</div>
+            ) : (
+              <div className="space-y-3">
+                {(() => {
+                  const records = (foremanRecords[selectedForemanId] || []).slice();
+                  if (records.length === 0) {
+                    return <div className="text-sm text-gray-500">No attendance records.</div>;
+                  }
+                  records.sort((a, b) => (a.date < b.date ? 1 : -1));
+                  const latest = records[0];
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between border rounded p-2">
+                        <div>
+                          <div className="font-medium">{latest.date}</div>
+                          <div className="text-xs text-gray-500">{latest.presentWorkers}/{latest.totalWorkers} present</div>
+                        </div>
+                        <Badge variant={statusVariant(latest.status)}>{statusLabel(latest.status)}</Badge>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
