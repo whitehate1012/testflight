@@ -114,20 +114,6 @@ export default function AddUser() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
             </div>
-            <div>
-              <Label htmlFor="siteId">Assign to Site (optional)</Label>
-              <select
-                id="siteId"
-                className="border rounded-md h-10 px-3 w-full"
-                value={form.siteId}
-                onChange={(e) => setForm({ ...form, siteId: e.target.value })}
-              >
-                <option value="">-- None --</option>
-                {sites.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
             <div className="md:col-span-3">
               <Button type="submit">Create User</Button>
             </div>
