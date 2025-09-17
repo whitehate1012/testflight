@@ -25,6 +25,7 @@ import {
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { Building2, Info, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, User as UserIcon, UserCheck, Users } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function SiteManagement() {
   const { user } = useAuth();
