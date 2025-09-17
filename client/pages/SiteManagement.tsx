@@ -124,6 +124,80 @@ export default function SiteManagement() {
     }
   };
 
+  const toggleRow = (siteId: string) => {
+    setExpanded((prev) => ({ ...prev, [siteId]: !prev[siteId] }));
+  };
+
+  const openAddForeman = (siteId: string) => {
+    setSelectedSiteForForeman(siteId);
+    setSelectedForemanId("");
+    setAddForemanOpen(true);
+  };
+
+  const assignForeman = async () => {
+    if (!selectedSiteForForeman || !selectedForemanId) return;
+    const token = localStorage.getItem("auth_token");
+    await fetch(`/api/admin/users/${selectedForemanId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ siteId: selectedSiteForForeman }),
+    });
+    setAddForemanOpen(false);
+    await loadAll();
+  };
+
+  const removeForeman = async (foremanId: string) => {
+    const token = localStorage.getItem("auth_token");
+    await fetch(`/api/admin/users/${foremanId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ siteId: "" }),
+    });
+    await loadAll();
+  };
+
+  const openEdit = (site: Site) => {
+    setEditingSiteId(site.id);
+    setEditForm({ name: site.name, location: site.location, inchargeId: site.inchargeId || "" });
+    setEditOpen(true);
+  };
+
+  const submitEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSiteId) return;
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch(`/api/sites/${editingSiteId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(editForm),
+    });
+    const data: ApiResponse<Site> = await res.json();
+    if (res.ok && data.success && data.data) {
+      setSites((prev) => prev.map((s) => (s.id === data.data!.id ? data.data! : s)));
+      setEditOpen(false);
+    }
+  };
+
+  const deleteSite = async (siteId: string) => {
+    const token = localStorage.getItem("auth_token");
+    await fetch(`/api/sites/${siteId}`, {
+      method: "DELETE",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    setSites((prev) => prev.filter((s) => s.id !== siteId));
+  };
+
   if (!isAdmin) {
     return (
       <div className="space-y-6">
