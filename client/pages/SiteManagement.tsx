@@ -286,8 +286,8 @@ export default function SiteManagement() {
                     );
                   })}
                 </TableBody>
+                <TableCaption className="text-left">Showing {filteredSites.length} sites</TableCaption>
               </Table>
-              <TableCaption className="text-left">Showing {filteredSites.length} sites</TableCaption>
             </>
           )}
         </CardContent>
