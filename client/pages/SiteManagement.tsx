@@ -433,31 +433,75 @@ export default function SiteManagement() {
         </CardContent>
       </Card>
 
-      {/* Collapsible details (kept for reference/expanded view) */}
-      <Accordion type="single" collapsible className="hidden">
-        {sites.map((s) => {
-          const siteForemen = foremen.filter((f) => f.siteId === s.id);
-          return (
-            <AccordionItem key={s.id} value={s.id}>
-              <AccordionTrigger>{s.name}</AccordionTrigger>
-              <AccordionContent>
-                <div className="p-3 border rounded-md">
-                  <div className="text-sm text-gray-600">Incharge: {s.inchargeName || "Not assigned"}</div>
-                  <div className="mt-2 text-sm text-gray-700">
-                    <div className="font-medium">Foremen:</div>
-                    <ul className="list-disc list-inside">
-                      {siteForemen.map((f) => (
-                        <li key={f.id}>{f.name}</li>
-                      ))}
-                      {siteForemen.length === 0 && <li className="text-gray-500">None</li>}
-                    </ul>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+      {/* Add Foreman Dialog */}
+      <Dialog open={addForemanOpen} onOpenChange={setAddForemanOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Foreman</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="foreman">Select a manager</Label>
+            <select
+              id="foreman"
+              className="border rounded-md h-10 px-3 w-full"
+              value={selectedForemanId}
+              onChange={(e) => setSelectedForemanId(e.target.value)}
+            >
+              <option value="">Select a manager</option>
+              {foremen.filter((f) => !f.siteId).map((f) => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+            </select>
+          </div>
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">Cancel</Button>
+            </DialogClose>
+            <Button onClick={assignForeman} disabled={!selectedForemanId}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Site Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Site</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitEdit} className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="editName">Site Name</Label>
+                <Input id="editName" required value={editForm.name} onChange={(e)=>setEditForm({...editForm, name: e.target.value})} />
+              </div>
+              <div>
+                <Label htmlFor="editLoc">Location</Label>
+                <Input id="editLoc" required value={editForm.location} onChange={(e)=>setEditForm({...editForm, location: e.target.value})} />
+              </div>
+              <div>
+                <Label htmlFor="editIncharge">Site Incharge</Label>
+                <select
+                  id="editIncharge"
+                  className="border rounded-md h-10 px-3 w-full"
+                  value={editForm.inchargeId}
+                  onChange={(e) => setEditForm({ ...editForm, inchargeId: e.target.value })}
+                >
+                  <option value="">No Incharge Assigned</option>
+                  {siteIncharges.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">Cancel</Button>
+              </DialogClose>
+              <Button type="submit">Update</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
