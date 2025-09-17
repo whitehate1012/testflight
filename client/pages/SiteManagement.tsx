@@ -350,8 +350,8 @@ export default function SiteManagement() {
                     const siteForemen = foremen.filter((f) => f.siteId === s.id);
                     const inchargeLabel = s.inchargeName || "No incharge assigned";
                     return (
-                      <>
-                        <TableRow key={s.id} className="cursor-pointer" onClick={() => toggleRow(s.id)}>
+                      <Fragment key={s.id}>
+                        <TableRow className="cursor-pointer" onClick={() => toggleRow(s.id)}>
                           <TableCell className="text-gray-700">
                             <div className="flex items-center gap-2"><UserIcon className="h-4 w-4 text-emerald-600" /> {inchargeLabel}</div>
                           </TableCell>
@@ -422,7 +422,7 @@ export default function SiteManagement() {
                             </TableCell>
                           </TableRow>
                         ) : null}
-                      </>
+                      </Fragment>
                     );
                   })}
                 </TableBody>
