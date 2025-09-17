@@ -44,6 +44,16 @@ export default function SiteManagement() {
     foremanIds: [] as string[],
   });
 
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const [addForemanOpen, setAddForemanOpen] = useState(false);
+  const [selectedSiteForForeman, setSelectedSiteForForeman] = useState<string>("");
+  const [selectedForemanId, setSelectedForemanId] = useState<string>("");
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingSiteId, setEditingSiteId] = useState<string>("");
+  const [editForm, setEditForm] = useState({ name: "", location: "", inchargeId: "" });
+
   const siteIncharges = useMemo(() => users.filter((u) => u.role === "site_incharge"), [users]);
   const foremen = useMemo(() => users.filter((u) => u.role === "foreman"), [users]);
 
