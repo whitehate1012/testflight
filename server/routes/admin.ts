@@ -223,3 +223,104 @@ export const handleListSites: RequestHandler = (_req, res) => {
     return res.status(500).json(response);
   }
 };
+
+export const handleUpdateSite: RequestHandler = (req, res) => {
+  try {
+    const admin = getUserFromToken(req.headers.authorization);
+    if (!admin || admin.role !== "admin") {
+      const response: ApiResponse = { success: false, message: "Unauthorized" };
+      return res.status(401).json(response);
+    }
+
+    const { id } = req.params as { id: string };
+    const site = database.sites.find((s) => s.id === id);
+    if (!site) {
+      const response: ApiResponse = { success: false, message: "Site not found" };
+      return res.status(404).json(response);
+    }
+
+    const { name, location, inchargeId, foremanIds } = req.body as Partial<Site> & { inchargeId?: string; foremanIds?: string[] };
+
+    if (typeof name === "string") site.name = name;
+    if (typeof location === "string") site.location = location;
+
+    // Update incharge relationship
+    if (typeof inchargeId === "string") {
+      // Clear previous incharge's siteId if different
+      if (site.inchargeId && site.inchargeId !== inchargeId) {
+        const prev = database.users.find((u) => u.id === site.inchargeId);
+        if (prev && prev.role === "site_incharge") prev.siteId = "";
+      }
+      if (inchargeId) {
+        const inchargeUser = database.users.find((u) => u.id === inchargeId && u.role === "site_incharge");
+        if (!inchargeUser) {
+          const response: ApiResponse = { success: false, message: "Invalid inchargeId" };
+          return res.status(400).json(response);
+        }
+        site.inchargeId = inchargeUser.id;
+        site.inchargeName = inchargeUser.name;
+        inchargeUser.siteId = site.id;
+      } else {
+        site.inchargeId = "";
+        site.inchargeName = "";
+      }
+    }
+
+    // Optionally assign foremen
+    if (Array.isArray(foremanIds)) {
+      const alreadyAssigned = database.users.filter(
+        (u) => u.role === "foreman" && foremanIds.includes(u.id) && u.siteId && u.siteId !== "" && u.siteId !== site.id,
+      );
+      if (alreadyAssigned.length > 0) {
+        const response: ApiResponse = { success: false, message: "One or more foremen are already assigned to another site." };
+        return res.status(400).json(response);
+      }
+      database.users
+        .filter((u) => u.role === "foreman" && foremanIds.includes(u.id))
+        .forEach((f) => {
+          f.siteId = site.id;
+        });
+    }
+
+    const response: ApiResponse<Site> = { success: true, data: site };
+    return res.json(response);
+  } catch (error) {
+    console.error("Update site error:", error);
+    const response: ApiResponse = { success: false, message: "Internal server error" };
+    return res.status(500).json(response);
+  }
+};
+
+export const handleDeleteSite: RequestHandler = (req, res) => {
+  try {
+    const admin = getUserFromToken(req.headers.authorization);
+    if (!admin || admin.role !== "admin") {
+      const response: ApiResponse = { success: false, message: "Unauthorized" };
+      return res.status(401).json(response);
+    }
+
+    const { id } = req.params as { id: string };
+    const index = database.sites.findIndex((s) => s.id === id);
+    if (index === -1) {
+      const response: ApiResponse = { success: false, message: "Site not found" };
+      return res.status(404).json(response);
+    }
+
+    const [removed] = database.sites.splice(index, 1);
+
+    // Clear assignments for users and workers
+    database.users.forEach((u) => {
+      if (u.siteId === removed.id) u.siteId = "";
+    });
+    database.workers.forEach((w) => {
+      if (w.siteId === removed.id) w.siteId = "";
+    });
+
+    const response: ApiResponse = { success: true };
+    return res.json(response);
+  } catch (error) {
+    console.error("Delete site error:", error);
+    const response: ApiResponse = { success: false, message: "Internal server error" };
+    return res.status(500).json(response);
+  }
+};
