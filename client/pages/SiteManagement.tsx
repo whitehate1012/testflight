@@ -350,24 +350,79 @@ export default function SiteManagement() {
                     const siteForemen = foremen.filter((f) => f.siteId === s.id);
                     const inchargeLabel = s.inchargeName || "No incharge assigned";
                     return (
-                      <TableRow key={s.id}>
-                        <TableCell className="text-gray-700">
-                          <div className="flex items-center gap-2"><UserIcon className="h-4 w-4 text-emerald-600" /> {inchargeLabel}</div>
-                        </TableCell>
-                        <TableCell className="font-medium">{s.name}</TableCell>
-                        <TableCell className="text-gray-600"><div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-gray-400" /> {s.location}</div></TableCell>
-                        <TableCell className="text-right font-semibold">{siteForemen.length}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" disabled title="Edit not available">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="sm" disabled title="Delete not available">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <>
+                        <TableRow key={s.id} className="cursor-pointer" onClick={() => toggleRow(s.id)}>
+                          <TableCell className="text-gray-700">
+                            <div className="flex items-center gap-2"><UserIcon className="h-4 w-4 text-emerald-600" /> {inchargeLabel}</div>
+                          </TableCell>
+                          <TableCell className="font-medium">{s.name}</TableCell>
+                          <TableCell className="text-gray-600"><div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-gray-400" /> {s.location}</div></TableCell>
+                          <TableCell className="text-right font-semibold">{siteForemen.length}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Button variant="outline" size="sm" onClick={() => openEdit(s)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <ConfirmDialog
+                                title="Delete site?"
+                                description="This will remove the site and unassign related users."
+                                onConfirm={() => deleteSite(s.id)}
+                                trigger={
+                                  <Button variant="outline" size="sm">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                }
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                        {expanded[s.id] ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="bg-gray-50">
+                              <div className="border rounded-md p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div>
+                                    <div className="text-sm font-medium mb-2">Site Incharge</div>
+                                    <div className="flex items-start gap-3">
+                                      <UserIcon className="h-4 w-4 text-emerald-600 mt-1" />
+                                      <div>
+                                        <div className="font-medium">{inchargeLabel}</div>
+                                        <div className="text-xs text-gray-500">{s.inchargeId || ""}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center justify-between">
+                                      <div className="text-sm font-medium">Site Foremen</div>
+                                      <Button size="sm" onClick={() => openAddForeman(s.id)}>
+                                        <Plus className="h-4 w-4 mr-1"/> Add Foremen
+                                      </Button>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 mt-2"><Info className="h-3.5 w-3.5"/> Click on a foreman to view their attendance records</div>
+                                    <div className="mt-3 space-y-2">
+                                      {siteForemen.length === 0 ? (
+                                        <div className="text-gray-500 text-sm">No foremen assigned</div>
+                                      ) : (
+                                        siteForemen.map((f) => (
+                                          <div key={f.id} className="flex items-center justify-between border rounded px-2 py-1.5 text-sm bg-white">
+                                            <div className="flex items-center gap-2">
+                                              <span className="inline-flex h-5 w-5 items-center justify-center rounded border text-[10px]">{f.name?.charAt(0) || "F"}</span>
+                                              {f.name}
+                                            </div>
+                                            <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => removeForeman(f.id)}>
+                                              ×
+                                            </Button>
+                                          </div>
+                                        ))
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ) : null}
+                      </>
                     );
                   })}
                 </TableBody>
