@@ -22,6 +22,8 @@ import {
   handleDeleteUser,
   handleCreateSite,
   handleListSites,
+  handleUpdateSite,
+  handleDeleteSite,
 } from "./routes/admin.js";
 import {
   handleSubmitAttendance,
