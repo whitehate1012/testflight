@@ -40,9 +40,11 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [lang, setLang] = useState<string>(
-    () => localStorage.getItem("app_lang") || "hi",
-  );
+  const [lang, setLang] = useState<string>(() => {
+    const stored = localStorage.getItem("app_lang");
+    if (stored) return stored;
+    return user?.role === "admin" ? "en" : "hi";
+  });
   const t = (en: string, hi: string) => (lang === "en" ? en : hi);
 
   const getNavigationItems = () => {
@@ -112,13 +114,13 @@ export default function Layout({ children }: LayoutProps) {
           roles: ["admin"],
         },
         {
-          label: "Sites",
+          label: "Attendance",
           href: "/sites/overview",
           icon: Building2,
           roles: ["admin"],
         },
         {
-          label: "Attendance Records (coming soon)",
+          label: "Attendance Records",
           href: "/attendance/records",
           icon: ClipboardList,
           roles: ["admin"],
