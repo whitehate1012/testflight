@@ -90,8 +90,8 @@ export default function AttendanceRecords() {
           </TableHeader>
           <TableBody>
             {records.map((r) => (
-              <>
-                <TableRow key={r.id} className="cursor-pointer" onClick={() => setExpanded((p)=>({ ...p, [r.id]: !p[r.id] }))}>
+              <Fragment key={r.id}>
+                <TableRow className="cursor-pointer" onClick={() => setExpanded((p)=>({ ...p, [r.id]: !p[r.id] }))}>
                   <TableCell className="font-medium">{r.siteName}</TableCell>
                   <TableCell>
                     <Badge className={statusColor(r.status)}>{r.status.replace("_"," ")}</Badge>
@@ -106,11 +106,11 @@ export default function AttendanceRecords() {
                           <div className="border rounded p-3">
                             <div className="text-sm text-gray-600 mb-2">Entries</div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                              {r.entries.map((e, idx) => (
-                                <div key={idx} className="border rounded p-2 text-sm">
+                              {r.entries.map((e) => (
+                                <div key={e.workerId} className="border rounded p-2 text-sm">
                                   <div className="font-medium">{e.workerName}</div>
                                   <div className="text-xs text-gray-500">{e.isPresent ? "Present" : "Absent"}</div>
-                                  {e.hours ? <div className="text-xs">Hours: {e.hours}</div> : null}
+                                  {e.hoursWorked ? <div className="text-xs">Hours: {e.hoursWorked}</div> : null}
                                 </div>
                               ))}
                             </div>
@@ -120,7 +120,7 @@ export default function AttendanceRecords() {
                     </TableRow>
                   ) : null}
                 </AnimatePresence>
-              </>
+              </Fragment>
             ))}
           </TableBody>
         </Table>
