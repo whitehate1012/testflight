@@ -22,6 +22,8 @@ import {
   handleDeleteUser,
   handleCreateSite,
   handleListSites,
+  handleUpdateSite,
+  handleDeleteSite,
 } from "./routes/admin.js";
 import {
   handleSubmitAttendance,
@@ -73,6 +75,8 @@ export function createServer() {
   app.delete("/api/admin/users/:id", handleDeleteUser);
   app.post("/api/sites", handleCreateSite);
   app.get("/api/sites", handleListSites);
+  app.put("/api/sites/:id", handleUpdateSite);
+  app.delete("/api/sites/:id", handleDeleteSite);
 
   // Attendance Management
   app.post("/api/attendance/submit", handleSubmitAttendance);

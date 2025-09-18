@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../App";
 import {
   Card,
@@ -7,15 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../components/ui/accordion";
 import { ApiResponse, Site, User, AttendanceRecord } from "@shared/api";
-import { Badge } from "../components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import { MapPin, Search, User as UserIcon } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function Sites() {
   const { user } = useAuth();
@@ -23,9 +34,11 @@ export default function Sites() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
-  const [expandedSites, setExpandedSites] = useState<string[]>([]);
-  const [expandedForemen, setExpandedForemen] = useState<Record<string, boolean>>({});
-  const [selectedForemanId, setSelectedForemanId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const [selectedForemanId, setSelectedForemanId] = useState<string | null>(
+    null,
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [foremanRecords, setForemanRecords] = useState<
     Record<string, AttendanceRecord[]>
@@ -33,6 +46,8 @@ export default function Sites() {
   const [loadingForeman, setLoadingForeman] = useState<Record<string, boolean>>(
     {},
   );
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const siteIncharges = useMemo(
     () => users.filter((u) => u.role === "site_incharge"),
@@ -42,6 +57,16 @@ export default function Sites() {
     () => users.filter((u) => u.role === "foreman"),
     [users],
   );
+
+  const filteredSites = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return sites;
+    return sites.filter((s) =>
+      [s.name, s.location, s.inchargeName].some((v) =>
+        v?.toLowerCase().includes(q),
+      ),
+    );
+  }, [search, sites]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -65,11 +90,14 @@ export default function Sites() {
   if (!isAdmin) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Sites</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
         <p className="text-gray-600">Only admins can view this page.</p>
       </div>
     );
   }
+
+  const toggleRow = (siteId: string) =>
+    setExpanded((p) => ({ ...p, [siteId]: !p[siteId] }));
 
   const openForemanDialog = async (foremanId: string) => {
     setSelectedForemanId(foremanId);
@@ -90,107 +118,146 @@ export default function Sites() {
     }
   };
 
-  const statusLabel = (s: AttendanceRecord["status"]) => {
-    if (s === "incharge_reviewed") return "Approved by Incharge";
-    if (s === "submitted") return "Taken (Pending Review)";
-    if (s === "admin_approved") return "Admin Approved";
-    return "Rejected";
-  };
-
-  const statusVariant = (s: AttendanceRecord["status"]) => {
-    if (s === "incharge_reviewed") return "default" as const;
-    if (s === "submitted") return "secondary" as const;
-    if (s === "admin_approved") return "outline" as const;
-    return "destructive" as const;
-  };
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Sites</h1>
-        <p className="text-gray-600">
-          Browse sites and view attendance per foreman
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
+          <p className="text-gray-600">
+            Browse sites and view attendance per foreman
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search sites..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Sites</CardTitle>
+          <CardTitle>Attendance</CardTitle>
           <CardDescription>
-            Site → Incharge (left) and Foremen (right)
+            Tap a site to expand and view foremen; click a foreman to view
+            attendance
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {sites.length === 0 ? (
+          {filteredSites.length === 0 ? (
             <div className="text-gray-500">No sites found.</div>
           ) : (
-            <Accordion
-              type="multiple"
-              value={expandedSites}
-              onValueChange={(v) => setExpandedSites(v as string[])}
-            >
-              {sites.map((site) => {
-                const incharge = siteIncharges.find(
-                  (u) => u.id === site.inchargeId,
-                );
-                const siteForemen = foremen.filter((f) => f.siteId === site.id);
-                return (
-                  <AccordionItem key={site.id} value={site.id}>
-                    <AccordionTrigger>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{site.name}</span>
-                        <span className="text-sm text-gray-500">
-                          ({site.location})
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="md:col-span-1 border rounded-md p-3">
-                          <div className="text-sm text-gray-500">
-                            Site Incharge
-                          </div>
-                          <div className="font-medium">
-                            {incharge?.name || "Not Assigned"}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {incharge?.username || "-"}
-                          </div>
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                          {siteForemen.length === 0 ? (
-                            <div className="text-gray-500">
-                              No foremen assigned.
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>SITE INCHARGE</TableHead>
+                    <TableHead>NAME</TableHead>
+                    <TableHead>LOCATION</TableHead>
+                    <TableHead className="text-right">TOTAL FOREMEN</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSites.map((s) => {
+                    const siteForemen = foremen.filter(
+                      (f) => f.siteId === s.id,
+                    );
+                    const inchargeLabel =
+                      s.inchargeName || "No incharge assigned";
+                    return (
+                      <Fragment key={s.id}>
+                        <TableRow
+                          className="cursor-pointer"
+                          onClick={() => toggleRow(s.id)}
+                        >
+                          <TableCell className="text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <UserIcon className="h-4 w-4 text-emerald-600" />{" "}
+                              {inchargeLabel}
                             </div>
-                          ) : (
-                            siteForemen.map((f) => (
-                              <div key={f.id} className="border rounded-md">
-                                <button
-                                  className="w-full text-left px-3 py-2 hover:bg-muted"
-                                  onClick={() => openForemanDialog(f.id)}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {s.name}
+                          </TableCell>
+                          <TableCell className="text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4 text-gray-400" />{" "}
+                              {s.location}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {siteForemen.length}
+                          </TableCell>
+                        </TableRow>
+                        <AnimatePresence>
+                          {expanded[s.id] ? (
+                            <TableRow>
+                              <TableCell colSpan={4} className="bg-gray-50">
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{
+                                    duration: 0.25,
+                                    ease: "easeInOut",
+                                  }}
                                 >
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <div className="font-medium">
-                                        {f.name}
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        @{f.username}
-                                      </div>
+                                  <div className="p-4 border rounded-md">
+                                    <div className="text-sm font-medium mb-2">
+                                      Site Foremen
                                     </div>
-                                    <div className="text-xs text-gray-500">View attendance</div>
+                                    <div className="mt-2 space-y-2">
+                                      {siteForemen.length === 0 ? (
+                                        <div className="text-gray-500 text-sm">
+                                          No foremen assigned
+                                        </div>
+                                      ) : (
+                                        siteForemen.map((f) => (
+                                          <div
+                                            key={f.id}
+                                            className="flex items-center justify-between border rounded px-2 py-1.5 text-sm bg-white"
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <span className="inline-flex h-5 w-5 items-center justify-center rounded border text-[10px]">
+                                                {f.name?.charAt(0) || "F"}
+                                              </span>
+                                              {f.name}
+                                            </div>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-7 px-2"
+                                              onClick={() =>
+                                                openForemanDialog(f.id)
+                                              }
+                                            >
+                                              View
+                                            </Button>
+                                          </div>
+                                        ))
+                                      )}
+                                    </div>
                                   </div>
-                                </button>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
+                                </motion.div>
+                              </TableCell>
+                            </TableRow>
+                          ) : null}
+                        </AnimatePresence>
+                      </Fragment>
+                    );
+                  })}
+                </TableBody>
+                <TableCaption className="text-left">
+                  Showing {filteredSites.length} sites
+                </TableCaption>
+              </Table>
+            </>
           )}
         </CardContent>
       </Card>
@@ -206,9 +273,15 @@ export default function Sites() {
             ) : (
               <div className="space-y-3">
                 {(() => {
-                  const records = (foremanRecords[selectedForemanId] || []).slice();
+                  const records = (
+                    foremanRecords[selectedForemanId] || []
+                  ).slice();
                   if (records.length === 0) {
-                    return <div className="text-sm text-gray-500">No attendance records.</div>;
+                    return (
+                      <div className="text-sm text-gray-500">
+                        No attendance records.
+                      </div>
+                    );
                   }
                   records.sort((a, b) => (a.date < b.date ? 1 : -1));
                   const latest = records[0];
@@ -217,9 +290,11 @@ export default function Sites() {
                       <div className="flex items-center justify-between border rounded p-2">
                         <div>
                           <div className="font-medium">{latest.date}</div>
-                          <div className="text-xs text-gray-500">{latest.presentWorkers}/{latest.totalWorkers} present</div>
+                          <div className="text-xs text-gray-500">
+                            {latest.presentWorkers}/{latest.totalWorkers}{" "}
+                            present
+                          </div>
                         </div>
-                        <Badge variant={statusVariant(latest.status)}>{statusLabel(latest.status)}</Badge>
                       </div>
                     </div>
                   );
