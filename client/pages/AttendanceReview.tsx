@@ -272,7 +272,13 @@ export default function AttendanceReview() {
                       <DialogHeader>
                         <DialogTitle>Review Attendance - {record.siteName}</DialogTitle>
                         <DialogDescription>
-                          Submitted by {record.foremanName} on {new Date(record.date).toLocaleDateString()} {record.inTime || record.outTime ? `• In: ${record.inTime || '--'} • Out: ${record.outTime || '--'}` : ''}
+                          Submitted by {record.foremanName} on {new Date(record.date).toLocaleDateString()} {record.inTime || record.outTime ? (
+                            <span className="ml-2">
+                              • In: <span className="font-semibold">{record.inTime || '--'}</span>
+                              <span className="mx-2">•</span>
+                              Out: <span className="font-semibold">{record.outTime || '--'}</span>
+                            </span>
+                          ) : ''}
                         </DialogDescription>
                       </DialogHeader>
 
