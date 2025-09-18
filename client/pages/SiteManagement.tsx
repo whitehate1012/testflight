@@ -377,52 +377,56 @@ export default function SiteManagement() {
                             </div>
                           </TableCell>
                         </TableRow>
-                        {expanded[s.id] ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="bg-gray-50">
-                              <div className="border rounded-md p-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                  <div>
-                                    <div className="text-sm font-medium mb-2">Site Incharge</div>
-                                    <div className="flex items-start gap-3">
-                                      <UserIcon className="h-4 w-4 text-emerald-600 mt-1" />
+                        <AnimatePresence>
+                          {expanded[s.id] ? (
+                            <TableRow>
+                              <TableCell colSpan={5} className="bg-gray-50">
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: "easeInOut" }}>
+                                  <div className="border rounded-md p-4 transition-all duration-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                       <div>
-                                        <div className="font-medium">{inchargeLabel}</div>
-                                        <div className="text-xs text-gray-500">{s.inchargeId || ""}</div>
+                                        <div className="text-sm font-medium mb-2">Site Incharge</div>
+                                        <div className="flex items-start gap-3">
+                                          <UserIcon className="h-4 w-4 text-emerald-600 mt-1" />
+                                          <div>
+                                            <div className="font-medium">{inchargeLabel}</div>
+                                            <div className="text-xs text-gray-500">{s.inchargeId || ""}</div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="text-sm font-medium">Site Foremen</div>
+                                          <Button size="sm" onClick={() => openAddForeman(s.id)}>
+                                            <Plus className="h-4 w-4 mr-1"/> Add Foremen
+                                          </Button>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600 mt-2"><Info className="h-3.5 w-3.5"/> Click on a foreman to view their attendance records</div>
+                                        <div className="mt-3 space-y-2">
+                                          {siteForemen.length === 0 ? (
+                                            <div className="text-gray-500 text-sm">No foremen assigned</div>
+                                          ) : (
+                                            siteForemen.map((f) => (
+                                              <div key={f.id} className="flex items-center justify-between border rounded px-2 py-1.5 text-sm bg-white">
+                                                <div className="flex items-center gap-2">
+                                                  <span className="inline-flex h-5 w-5 items-center justify-center rounded border text-[10px]">{f.name?.charAt(0) || "F"}</span>
+                                                  {f.name}
+                                                </div>
+                                                <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => removeForeman(f.id)}>
+                                                  ×
+                                                </Button>
+                                              </div>
+                                            ))
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                  <div>
-                                    <div className="flex items-center justify-between">
-                                      <div className="text-sm font-medium">Site Foremen</div>
-                                      <Button size="sm" onClick={() => openAddForeman(s.id)}>
-                                        <Plus className="h-4 w-4 mr-1"/> Add Foremen
-                                      </Button>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-600 mt-2"><Info className="h-3.5 w-3.5"/> Click on a foreman to view their attendance records</div>
-                                    <div className="mt-3 space-y-2">
-                                      {siteForemen.length === 0 ? (
-                                        <div className="text-gray-500 text-sm">No foremen assigned</div>
-                                      ) : (
-                                        siteForemen.map((f) => (
-                                          <div key={f.id} className="flex items-center justify-between border rounded px-2 py-1.5 text-sm bg-white">
-                                            <div className="flex items-center gap-2">
-                                              <span className="inline-flex h-5 w-5 items-center justify-center rounded border text-[10px]">{f.name?.charAt(0) || "F"}</span>
-                                              {f.name}
-                                            </div>
-                                            <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => removeForeman(f.id)}>
-                                              ×
-                                            </Button>
-                                          </div>
-                                        ))
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ) : null}
+                                </motion.div>
+                              </TableCell>
+                            </TableRow>
+                          ) : null}
+                        </AnimatePresence>
                       </Fragment>
                     );
                   })}
